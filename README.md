@@ -1,6 +1,18 @@
 
 # Progetto Laguna
-Sfruttando le api offerte dal comune di venezia reperibili a questo url https://dati.venezia.it/?q=formato/json, vogliamo realizzare un'applicazione react che permetta di visualizzare su mappa tutti i rilevatori sparsi per la nostra amata laguna con i relativi dati
+
+Il **Progetto Laguna** nasce con l’obiettivo di valorizzare e rendere più accessibili i dati aperti messi a disposizione dal [Comune di Venezia](https://dati.venezia.it/?q=formato/json).  
+
+Attraverso un’applicazione sviluppata in **React**, vogliamo permettere agli utenti di:  
+- Visualizzare su una **mappa interattiva** tutti i rilevatori sparsi per la laguna di Venezia.  
+- Esplorare i **dati associati** a ciascun sensore in tempo reale.  
+
+---
+
+## 🎯 Obiettivi
+- Rendere più fruibili i dati pubblici in formato **open data**.  
+- Offrire una rappresentazione **grafica e intuitiva** delle informazioni.  
+- Creare un progetto open-source che unisca **tecnologia e territorio**.
 
 ## Documentazioni utili
 
