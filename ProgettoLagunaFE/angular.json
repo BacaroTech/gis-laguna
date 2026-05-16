@@ -67,10 +67,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ProgettoLagunaFE:build:production"
+              "buildTarget": "ProgettoLagunaFE:build:production"
             },
             "development": {
-              "browserTarget": "ProgettoLagunaFE:build:development"
+              "buildTarget": "ProgettoLagunaFE:build:development"
             }
           },
           "defaultConfiguration": "development",
@@ -81,7 +81,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ProgettoLagunaFE:build"
+            "buildTarget": "ProgettoLagunaFE:build"
           }
         },
         "test": {
