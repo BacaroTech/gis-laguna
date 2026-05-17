@@ -1,19 +1,23 @@
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import * as L from 'leaflet';
+import { MapService } from 'src/app/services/map.service';
 
 @Component({
     selector: 'app-map',
     templateUrl: './map.component.html',
     styleUrls: ['./map.component.scss'],
-    standalone: false
+    standalone: true
 })
 export class MapComponent implements AfterViewInit, OnInit {
+  readonly mp: MapService = inject(MapService);
+
   private map!: L.Map;
   private centroid: L.LatLngExpression = [45.4404, 12.3160];
   private data: any[] = [];
+  private markersLayer = new L.LayerGroup();
 
-  constructor(private http: HttpClient) { 
+  constructor() {
     const iconRetinaUrl = 'assets/marker-icon-2x.png';
     const iconUrl = 'assets/marker-icon.png';
     const shadowUrl = 'assets/marker-shadow.png';
@@ -34,34 +38,84 @@ export class MapComponent implements AfterViewInit, OnInit {
     if (this.map) {
       this.map.remove();
     }
-  
+
     this.map = L.map('map', {
       center: this.centroid,
       zoom: 12
     });
-  
-    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      minZoom: 10,
+
+    // ── Base layers ──────────────────────────────────────────────
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18, minZoom: 10,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
-  
-    tiles.addTo(this.map);
-  }  
 
-  
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18, minZoom: 10,
+      attribution: '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics'
+    });
+
+    const topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      maxZoom: 17, minZoom: 10,
+      attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+    });
+
+    const cartoLight = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18, minZoom: 10,
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+    });
+
+    const cartoDark = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18, minZoom: 10,
+      attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+    });
+
+    // ── Overlay layers ───────────────────────────────────────────
+    const waterways = L.tileLayer(
+      'https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png', {
+      maxZoom: 18, minZoom: 10, opacity: 0.7,
+      attribution: '&copy; <a href="https://waymarkedtrails.org">Waymarked Trails</a>'
+    });
+
+    // Add default base layer
+    osm.addTo(this.map);
+
+    // Add markers layer group (populated in ngOnInit)
+    this.markersLayer.addTo(this.map);
+
+    // ── Layers control ───────────────────────────────────────────
+    const baseLayers: L.Control.LayersObject = {
+      '🗺️ OpenStreetMap':  osm,
+      '🛰️ Satellite (Esri)': satellite,
+      '🏔️ Topografica':    topo,
+      '☀️ Carto Chiara':   cartoLight,
+      '🌙 Carto Scura':    cartoDark,
+    };
+
+    const overlays: L.Control.LayersObject = {
+      '🌊 Livelli acqua':  this.markersLayer,
+      '🚴 Percorsi':       waterways,
+    };
+
+    L.control.layers(baseLayers, overlays, {
+      position: 'topright',
+      collapsed: false       // always visible; set true to collapse into a button
+    }).addTo(this.map);
+  }
+
   ngOnInit(): void {
-    this.http.get("http://localhost:3000/").subscribe((reponse: any) => {
-      this.data = reponse.data;
+    this.mp.getAllLevels().subscribe((response: any) => {
+      this.data = response.data;
       console.log(this.data);
-      const jittery = this.data.map( 
-        x => [x.latDDN, x.lonDDE]
-      ).map(
-        x => L.marker(x as L.LatLngExpression)
-      ).forEach(
-        x => x.addTo(this.map)
-      );
-    })
+
+      // Add markers into the dedicated LayerGroup
+      this.data
+        .map(x => L.marker([x.latDDN, x.lonDDE] as L.LatLngExpression))
+        .forEach(marker => marker.addTo(this.markersLayer));
+    });
   }
 
   ngAfterViewInit(): void {

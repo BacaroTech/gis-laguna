@@ -1,35 +1,21 @@
 
-import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { MapComponent } from './components/map/map.component';
+import { NavComponent } from './components/nav/nav.component';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule, NavComponent, MapComponent]
 })
 export class AppComponent implements OnInit {
-  data: any;
-  loading = false;
-  error: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
   ngOnInit(): void {
-    this.fetchData();
   }
 
-  fetchData(): void {
-    this.loading = true;
-    this.http.get('http://localhost:3000').subscribe({
-      next: (response) => {
-        this.data = response;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'API Error';
-        this.loading = false;
-      },
-    });
-  }
 }
