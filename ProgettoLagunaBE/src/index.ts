@@ -8,6 +8,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const urlProxy: string = "https://dati.venezia.it/sites/default/files/dataset/opendata";
 
 const requiredEnvVars = ['DATABASE_PORT', 'DATABASE_USR', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_HOST'];
 for (const envVar of requiredEnvVars) {
@@ -28,7 +29,27 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/levels', async (req, res) => {
-  const url = "https://dati.venezia.it/sites/default/files/dataset/opendata/livello.json";
+  const url = urlProxy + "/livello.json";
+  try {
+    const response = await axios.get(url);
+    res.json({ status: 'success', data: response.data });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+app.get('/wind', async (req, res) => {
+  const url = urlProxy + "/vento.json";
+  try {
+    const response = await axios.get(url);
+    res.json({ status: 'success', data: response.data });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+app.get('/pressure', async (req, res) => {
+  const url = urlProxy + "/pressione.json";
   try {
     const response = await axios.get(url);
     res.json({ status: 'success', data: response.data });

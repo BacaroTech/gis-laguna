@@ -14,4 +14,12 @@ export class MapService {
   getAllLevels(){
     return this.http.get(environment.URL_BE+"/levels");
   }
+
+  getAllWind(){
+    return this.http.get(environment.URL_BE+"/wind");
+  }
+
+  getAllPressure(){
+    return this.http.get(environment.URL_BE+"/pressure");
+  }
 }

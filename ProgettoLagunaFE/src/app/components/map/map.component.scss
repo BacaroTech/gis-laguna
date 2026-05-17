@@ -15,4 +15,34 @@
 #map {
     height: 100vh;
 }
-  
+
+
+// Imported globally by Leaflet — override inside Angular's encapsulation
+:host ::ng-deep .map-popup {
+  font-family: inherit;
+  min-width: 180px;
+
+  h6 {
+    margin: 0 0 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 4px;
+  }
+
+  table {
+    width: 100%;
+    font-size: 0.82rem;
+    border-collapse: collapse;
+
+    td:first-child {
+      color: #666;
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+
+    td:last-child {
+      text-align: right;
+    }
+  }
+}
