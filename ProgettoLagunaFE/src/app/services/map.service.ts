@@ -22,4 +22,12 @@ export class MapService {
   getAllPressure(){
     return this.http.get(environment.URL_BE+"/pressure");
   }
+
+  getAllRadiation(){
+    return this.http.get(environment.URL_BE+"/radiation");
+  }
+
+  getAllWathertemp(){
+    return this.http.get(environment.URL_BE+"/wathertemp");
+  }
 }

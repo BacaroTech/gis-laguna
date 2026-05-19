@@ -23,6 +23,8 @@ export class MapComponent implements AfterViewInit, OnInit {
     levels: new L.LayerGroup(),
     wind: new L.LayerGroup(),
     pressure: new L.LayerGroup(),
+    radiation: new L.LayerGroup(),
+    wathertemp: new L.LayerGroup(),
   };
 
   constructor() {
@@ -141,6 +143,8 @@ export class MapComponent implements AfterViewInit, OnInit {
       '🌊 Livelli acqua': this.layers['levels'].addTo(this.map),
       '💨 Vento': this.layers['wind'],
       '🔵 Pressione': this.layers['pressure'],
+      '🔵 Radiazione solare': this.layers['radiation'],
+      '🔵 Temperatura dell\'acqua': this.layers['wathertemp'],
     };
 
     L.control.layers(baseLayers, overlays, {
@@ -156,11 +160,15 @@ export class MapComponent implements AfterViewInit, OnInit {
       levels: this.mp.getAllLevels(),
       wind: this.mp.getAllWind(),
       pressure: this.mp.getAllPressure(),
+      wathertemp: this.mp.getAllWathertemp(),
+      radiation: this.mp.getAllRadiation(),
     }).subscribe({
-      next: ({ levels, wind, pressure }: any) => {
+      next: ({ levels, wind, pressure, wathertemp, radiation }: any) => {
         this.populateLayer('levels', levels.data, d => this.levelPopup(d));
         this.populateLayer('wind', wind.data, d => this.windPopUp(d));
         this.populateLayer('pressure', pressure.data, d => this.pressurePopup(d));
+        this.populateLayer('wathertemp', wathertemp.data, d => d);
+        this.populateLayer('radiation', radiation.data, d => d);
       },
       error: err => console.error('Layer load error:', err),
     });

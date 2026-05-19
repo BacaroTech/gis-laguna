@@ -48,6 +48,26 @@ app.get('/wind', async (req, res) => {
   }
 });
 
+app.get('/wathertemp', async (req, res) => {
+  const url = urlProxy + "/tempacqua.json";
+  try {
+    const response = await axios.get(url);
+    res.json({ status: 'success', data: response.data });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+app.get('/radiation', async (req, res) => {
+  const url = urlProxy + "/radiazione.json";
+  try {
+    const response = await axios.get(url);
+    res.json({ status: 'success', data: response.data });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
 app.get('/pressure', async (req, res) => {
   const url = urlProxy + "/pressione.json";
   try {
