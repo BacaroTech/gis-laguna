@@ -1,9 +1,9 @@
 import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import { forkJoin } from 'rxjs';
-import { LevelData } from 'src/app/interface/LevelData';
-import { PressureData } from 'src/app/interface/PressureData';
-import { WindData } from 'src/app/interface/WindData';
+import { levelPopup } from 'src/app/modals/levelPopup';
+import { pressurePopup } from 'src/app/modals/pressurePopup';
+import { windPopUp } from 'src/app/modals/windPopup';
 import { MapService } from 'src/app/services/map.service';
 
 
@@ -20,12 +20,20 @@ export class MapComponent implements AfterViewInit, OnInit {
   private centroid: L.LatLngExpression = [45.4404, 12.3160];
 
   private readonly layers: Record<string, L.LayerGroup> = {
-    levels: new L.LayerGroup(),
-    wind: new L.LayerGroup(),
-    pressure: new L.LayerGroup(),
-    radiation: new L.LayerGroup(),
-    wathertemp: new L.LayerGroup(),
-  };
+  levels: new L.LayerGroup(),
+  wind: new L.LayerGroup(),
+  pressure: new L.LayerGroup(),
+  radiation: new L.LayerGroup(),
+  wathertemp: new L.LayerGroup(),
+
+  moon: new L.LayerGroup(),
+  humidity: new L.LayerGroup(),
+  airTemperature: new L.LayerGroup(),
+  lagoonWaves: new L.LayerGroup(),
+  forecast: new L.LayerGroup(),
+  highTideMin: new L.LayerGroup(),
+  cnrHighTideMin: new L.LayerGroup(),
+};
 
   constructor() {
     L.Marker.prototype.options.icon = L.icon({
@@ -38,44 +46,6 @@ export class MapComponent implements AfterViewInit, OnInit {
       tooltipAnchor: [16, -28],
       shadowSize: [41, 41],
     });
-  }
-
-  // ── Popup builders ─────────────────────────────────────────────
-
-  private levelPopup(d: LevelData): string {
-    return `
-      <div class="map-popup">
-        <h6>🌊 ${d.stazione}</h6>
-        <table>
-          <tr><td>ID stazione</td><td><b>${d.ID_stazione}</b></td></tr>
-          <tr><td>Abbr.</td>      <td>${d.nome_abbr}</td></tr>
-          <tr><td>Valore</td>     <td><b>${d.valore}</b></td></tr>
-          <tr><td>Data</td>       <td>${d.data}</td></tr>
-          <tr><td>Lat / Lon</td>  <td>${Number(d.latDDN).toFixed(4)}, ${Number(d.lonDDE).toFixed(4)}</td></tr>
-        </table>
-      </div>`;
-  }
-
-   private windPopUp(d: WindData): string {
-    return `
-      <div class="map-popup">
-        <h6>🌊 ${d.stazione}</h6>
-        <table>
-          
-        </table>
-      </div>`;
-  }
-
-  private pressurePopup(d: PressureData): string {
-    return `
-      <div class="map-popup">
-        <h6>🔵 ${d.stazione}</h6>
-        <table>
-          <tr><td>ID stazione</td><td><b>${d.ID_stazione}</b></td></tr>
-          <tr><td>Abbr.</td>      <td>${d.nome_abbr}</td></tr>
-          <tr><td>Lat / Lon</td>  <td>${Number(d.latDDN).toFixed(4)}, ${Number(d.lonDDE).toFixed(4)}</td></tr>
-        </table>
-      </div>`;
   }
 
   // ── Helpers ────────────────────────────────────────────────────
@@ -140,12 +110,20 @@ export class MapComponent implements AfterViewInit, OnInit {
     (baseLayers['🗺️ OpenStreetMap'] as L.TileLayer).addTo(this.map);
 
     const overlays: L.Control.LayersObject = {
-      '🌊 Livelli acqua': this.layers['levels'].addTo(this.map),
-      '💨 Vento': this.layers['wind'],
-      '🔵 Pressione': this.layers['pressure'],
-      '🔵 Radiazione solare': this.layers['radiation'],
-      '🔵 Temperatura dell\'acqua': this.layers['wathertemp'],
-    };
+  '🌊 Livelli acqua': this.layers['levels'].addTo(this.map),
+  '💨 Vento': this.layers['wind'],
+  '🔵 Pressione': this.layers['pressure'],
+  '🔵 Radiazione solare': this.layers['radiation'],
+  '🌡 Temperatura acqua': this.layers['wathertemp'],
+
+  '🌙 Luna': this.layers['moon'],
+  '💧 Umidità': this.layers['humidity'],
+  '🌡 Temperatura aria': this.layers['airTemperature'],
+  '🌊 Onde laguna': this.layers['lagoonWaves'],
+  '🔮 Previsioni': this.layers['forecast'],
+  '🌊 Marea min': this.layers['highTideMin'],
+  '🌊 Marea CNR min': this.layers['cnrHighTideMin'],
+};
 
     L.control.layers(baseLayers, overlays, {
       position: 'topright',
@@ -160,15 +138,42 @@ export class MapComponent implements AfterViewInit, OnInit {
       levels: this.mp.getAllLevels(),
       wind: this.mp.getAllWind(),
       pressure: this.mp.getAllPressure(),
-      wathertemp: this.mp.getAllWathertemp(),
+      wathertemp: this.mp.getAllWaterTemp(),
       radiation: this.mp.getAllRadiation(),
+      moon: this.mp.getMoonPhase(),
+  humidity: this.mp.getHumidity(),
+  airTemperature: this.mp.getAirTemperature(),
+  lagoonWaves: this.mp.getLagoonWaves(),
+  forecast: this.mp.getForecast(),
+  highTideMin: this.mp.getHighTideMin(),
+  cnrHighTideMin: this.mp.getCnrHighTideMin(),
     }).subscribe({
-      next: ({ levels, wind, pressure, wathertemp, radiation }: any) => {
-        this.populateLayer('levels', levels.data, d => this.levelPopup(d));
-        this.populateLayer('wind', wind.data, d => this.windPopUp(d));
-        this.populateLayer('pressure', pressure.data, d => this.pressurePopup(d));
+      next: ({
+        levels,
+  wind,
+  pressure,
+  wathertemp,
+  radiation,
+  moon,
+  humidity,
+  airTemperature,
+  lagoonWaves,
+  forecast,
+  highTideMin,
+  cnrHighTideMin }: any) => {
+        this.populateLayer('levels', levels.data, d => levelPopup(d));
+        this.populateLayer('wind', wind.data, d => windPopUp(d));
+        this.populateLayer('pressure', pressure.data, d => pressurePopup(d));
         this.populateLayer('wathertemp', wathertemp.data, d => d);
         this.populateLayer('radiation', radiation.data, d => d);
+        this.populateLayer('moon', moon.data, d => JSON.stringify(d));
+  this.populateLayer('humidity', humidity.data, d => JSON.stringify(d));
+  this.populateLayer('airTemperature', airTemperature.data, d => JSON.stringify(d));
+  this.populateLayer('lagoonWaves', lagoonWaves.data, d => JSON.stringify(d));
+  this.populateLayer('forecast', forecast.data, d => JSON.stringify(d));
+
+  this.populateLayer('highTideMin', highTideMin.data, d => JSON.stringify(d));
+  this.populateLayer('cnrHighTideMin', cnrHighTideMin.data, d => JSON.stringify(d));
       },
       error: err => console.error('Layer load error:', err),
     });

@@ -17,34 +17,34 @@ services:
       - progettolaguna-network
     restart: unless-stopped
 
-  progettolagunabe:
-    container_name: progettolagunabe
-    build: ./ProgettoLagunaBE
-    ports:
-      - "3000:3000"
-    environment:
-      - DATABASE_HOST=progettolagunadb
-      - DATABASE_PORT=5432
-      - DATABASE_USR=user
-      - DATABASE_PASSWORD=password
-      - DATABASE_NAME=laguna
-      - PORT=3000
-    depends_on:
-      - progettolagunadb
-    networks:
-      - progettolaguna-network
-    restart: unless-stopped
+  # progettolagunabe:
+  #   container_name: progettolagunabe
+  #   build: ./ProgettoLagunaBE
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - DATABASE_HOST=progettolagunadb
+  #     - DATABASE_PORT=5432
+  #     - DATABASE_USR=user
+  #     - DATABASE_PASSWORD=password
+  #     - DATABASE_NAME=laguna
+  #     - PORT=3000
+  #   depends_on:
+  #     - progettolagunadb
+  #   networks:
+  #     - progettolaguna-network
+  #   restart: unless-stopped
 
-  progettolagunafe:
-    container_name: progettolagunafe
-    build: ./ProgettoLagunaFE
-    ports:
-      - "8080:80"
-    depends_on:
-      - progettolagunabe
-    networks:
-      - progettolaguna-network
-    restart: unless-stopped
+  # progettolagunafe:
+  #   container_name: progettolagunafe
+  #   build: ./ProgettoLagunaFE
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - progettolagunabe
+  #   networks:
+  #     - progettolaguna-network
+  #   restart: unless-stopped
 
 volumes:
   progettolaguna-db-data:

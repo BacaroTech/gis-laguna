@@ -8,9 +8,18 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const urlProxy: string = "https://dati.venezia.it/sites/default/files/dataset/opendata";
 
-const requiredEnvVars = ['DATABASE_PORT', 'DATABASE_USR', 'DATABASE_PASSWORD', 'DATABASE_NAME', 'DATABASE_HOST'];
+const urlProxy =
+  'https://dati.venezia.it/sites/default/files/dataset/opendata';
+
+const requiredEnvVars = [
+  'DATABASE_PORT',
+  'DATABASE_USR',
+  'DATABASE_PASSWORD',
+  'DATABASE_NAME',
+  'DATABASE_HOST',
+];
+
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     throw new Error(`Missing required environment variable: ${envVar}`);
@@ -28,61 +37,59 @@ const pool = new Client({
 app.use(cors());
 app.use(express.json());
 
-app.get('/levels', async (req, res) => {
-  const url = urlProxy + "/livello.json";
-  try {
-    const response = await axios.get(url);
-    res.json({ status: 'success', data: response.data });
-  } catch (error: any) {
-    res.status(500).json({ status: 'error', error: error.message });
-  }
-});
+/**
+ * Helper per creare endpoint velocemente
+ */
+const createProxyRoute = (route: string, fileName: string) => {
+  app.get(route, async (req, res) => {
+    try {
+      const response = await axios.get(`${urlProxy}/${fileName}`);
 
-app.get('/wind', async (req, res) => {
-  const url = urlProxy + "/vento.json";
-  try {
-    const response = await axios.get(url);
-    res.json({ status: 'success', data: response.data });
-  } catch (error: any) {
-    res.status(500).json({ status: 'error', error: error.message });
-  }
-});
+      res.json({
+        status: 'success',
+        data: response.data,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        error: error.message,
+      });
+    }
+  });
+};
 
-app.get('/wathertemp', async (req, res) => {
-  const url = urlProxy + "/tempacqua.json";
-  try {
-    const response = await axios.get(url);
-    res.json({ status: 'success', data: response.data });
-  } catch (error: any) {
-    res.status(500).json({ status: 'error', error: error.message });
-  }
-});
+/**
+ * PROXY ROUTES BY https://dati.venezia.it/?q=content/cpsm-dati-meteomarini-laguna-e-litorale-veneziano
+ */
 
-app.get('/radiation', async (req, res) => {
-  const url = urlProxy + "/radiazione.json";
-  try {
-    const response = await axios.get(url);
-    res.json({ status: 'success', data: response.data });
-  } catch (error: any) {
-    res.status(500).json({ status: 'error', error: error.message });
-  }
-});
+createProxyRoute('/levels', 'livello.json');
+createProxyRoute('/wind', 'vento.json');
+createProxyRoute('/wathertemp', 'tempacqua.json');
+createProxyRoute('/radiation', 'radiazione.json');
+createProxyRoute('/pressure', 'pressione.json');
+createProxyRoute('/moon', 'fluna2026.json');
+createProxyRoute('/water-temperature', 'tempacqua.json');
+createProxyRoute('/humidity', 'umidita.json');
+createProxyRoute('/air-temperature', 'temparia.json');
+createProxyRoute('/lagoon-waves', 'onde_laguna.json');
+createProxyRoute('/forecast', 'previsione.json');
+createProxyRoute('/high-tide-min', 'as2026min.json');
+createProxyRoute('/cnr-high-tide-min', 'ascnr2026min.json');
 
-app.get('/pressure', async (req, res) => {
-  const url = urlProxy + "/pressione.json";
-  try {
-    const response = await axios.get(url);
-    res.json({ status: 'success', data: response.data });
-  } catch (error: any) {
-    res.status(500).json({ status: 'error', error: error.message });
-  }
-});
-
-// ✅ Server starts immediately, DB connects separately
+/**
+ * START SERVER
+ */
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
 
-pool.connect()
+/**
+ * DB CONNECTION
+ */
+
+pool
+  .connect()
   .then(() => console.log('Database connection established'))
-  .catch((err: Error) => console.error('DB connection failed:', err));
+  .catch((err: Error) =>
+    console.error('DB connection failed:', err)
+  );
